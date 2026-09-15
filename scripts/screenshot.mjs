@@ -44,7 +44,17 @@ const MOCK = {
     .map((n, i) => ({ id: i + 1, name: n, sort_order: i + 1, is_active: true })),
   personnel_roles: ['Operator', 'Laborer', 'Foreman', 'Superintendent', 'Truck Driver']
     .map((n, i) => ({ id: i + 1, name: n, sort_order: i + 1, is_active: i !== 4 })),
-  projects: [], personnel: [], equipment: [], assignments: [], project_contacts: [], personnel_entries: [],
+  projects: [
+    { id: 1, name: 'Zoetis Building Demolition', address: '1234 NE Douglas St, Lee\u2019s Summit, MO', status: 'active', start_type: 'confirmed', planned_start: '2026-09-08', planned_end: '2026-10-30', est_duration_days: null, use_company_calendar: true, custom_work_days: null, custom_start_time: null, custom_end_time: null, notes: '', created_by: null, created_at: '', updated_at: '' },
+    { id: 2, name: 'Westward Parking Garage', address: '900 Westward Dr, Kansas City, MO', status: 'in_permitting', start_type: 'tentative', planned_start: '2026-10-05', planned_end: null, est_duration_days: 15, use_company_calendar: true, custom_work_days: null, custom_start_time: null, custom_end_time: null, notes: 'Night work may be required near the hotel entrance.', created_by: null, created_at: '', updated_at: '' },
+    { id: 3, name: 'Riverfront Outlet Mall', address: '1 Riverfront Plaza, Lawrence, KS', status: 'awarded', start_type: 'tentative', planned_start: null, planned_end: null, est_duration_days: 40, use_company_calendar: false, custom_work_days: [1,2,3,4], custom_start_time: '06:00:00', custom_end_time: '16:30:00', notes: '', created_by: null, created_at: '', updated_at: '' },
+    { id: 4, name: 'Lenexa Fire Station 6', address: 'Lenexa, KS', status: 'closed', start_type: 'confirmed', planned_start: '2026-06-01', planned_end: '2026-06-19', est_duration_days: null, use_company_calendar: true, custom_work_days: null, custom_start_time: null, custom_end_time: null, notes: '', created_by: null, created_at: '', updated_at: '' },
+  ],
+  project_contacts: [
+    { id: 1, project_id: 2, name: 'Rachel Heathman', company: 'McCownGordon', role: 'Project Manager', phone: '816-555-0100', email: 'rheathman@example.com', notes: '' },
+    { id: 2, project_id: 2, name: 'Mike Jones', company: 'McCownGordon', role: 'Superintendent', phone: '816-555-0101', email: '', notes: 'On site from 6 AM' },
+  ],
+  personnel: [], equipment: [], assignments: [], personnel_entries: [],
 }
 
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' })

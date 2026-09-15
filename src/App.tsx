@@ -1,8 +1,10 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider, useAuth } from './lib/auth'
+import { LookupsProvider } from './lib/lookups'
 import AppShell from './components/AppShell'
 import LoginPage from './pages/LoginPage'
 import ProjectsPage from './pages/ProjectsPage'
+import ProjectDetailPage from './pages/ProjectDetailPage'
 import PersonnelPage from './pages/PersonnelPage'
 import EquipmentPage from './pages/EquipmentPage'
 import SchedulePage from './pages/SchedulePage'
@@ -38,16 +40,20 @@ function Gate() {
   }
 
   return (
-    <Routes>
-      <Route element={<AppShell />}>
-        <Route index element={<Navigate to="/schedule" replace />} />
-        <Route path="/projects" element={<ProjectsPage />} />
-        <Route path="/personnel" element={<PersonnelPage />} />
-        <Route path="/equipment" element={<EquipmentPage />} />
-        <Route path="/schedule" element={<SchedulePage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="*" element={<Navigate to="/schedule" replace />} />
-      </Route>
-    </Routes>
+    <LookupsProvider>
+      <Routes>
+        <Route element={<AppShell />}>
+          <Route index element={<Navigate to="/schedule" replace />} />
+          <Route path="/projects" element={<ProjectsPage />} />
+          <Route path="/projects/new" element={<ProjectDetailPage />} />
+          <Route path="/projects/:id" element={<ProjectDetailPage />} />
+          <Route path="/personnel" element={<PersonnelPage />} />
+          <Route path="/equipment" element={<EquipmentPage />} />
+          <Route path="/schedule" element={<SchedulePage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="*" element={<Navigate to="/schedule" replace />} />
+        </Route>
+      </Routes>
+    </LookupsProvider>
   )
 }

@@ -68,3 +68,50 @@ export interface LookupItem {
 }
 
 export const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+export interface Project {
+  id: number
+  name: string
+  address: string
+  status: ProjectStatus
+  start_type: StartType
+  planned_start: string | null
+  planned_end: string | null
+  est_duration_days: number | null
+  use_company_calendar: boolean
+  custom_work_days: number[] | null
+  custom_start_time: string | null
+  custom_end_time: string | null
+  notes: string
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ProjectContact {
+  id: number
+  project_id: number
+  name: string
+  company: string
+  role: string
+  phone: string
+  email: string
+  notes: string
+}
+
+export const PROJECT_STATUS_ORDER: ProjectStatus[] = [
+  'awarded',
+  'in_permitting',
+  'ready_to_start',
+  'active',
+  'on_hold',
+  'closed',
+]
+
+/** Statuses shown by default on lists and the schedule (spec §3.1). */
+export const DEFAULT_VISIBLE_STATUSES: ProjectStatus[] = [
+  'awarded',
+  'in_permitting',
+  'ready_to_start',
+  'active',
+]
