@@ -36,8 +36,11 @@ export default function LoginPage() {
     <div className="login-wrap">
       <form className="card login-card" onSubmit={onSubmit}>
         <div className="login-brand">
-          <span className="login-mark">ISW</span>
-          <span>Scheduler</span>
+          <img
+            src={`${import.meta.env.BASE_URL}logo-full.png`}
+            alt="Industrial Salvage & Wrecking Co. Inc."
+          />
+          <div className="login-sub">Scheduler</div>
         </div>
 
         {!isSupabaseConfigured && (

@@ -15,7 +15,10 @@ export default function AppShell() {
   return (
     <div className="app">
       <header className="topbar">
-        <span className="brand">ISW Scheduler</span>
+        <span className="brand">
+          <img src={`${import.meta.env.BASE_URL}logo-mark-white.png`} alt="ISW" />
+          <span>Scheduler</span>
+        </span>
         <nav aria-label="Main">
           {NAV.map((n) => (
             <NavLink key={n.to} to={n.to}>

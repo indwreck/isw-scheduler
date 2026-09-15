@@ -4,9 +4,10 @@
   --border: #e2e8f0;
   --text: #0f172a;
   --muted: #64748b;
-  --brand: #1f2937;
+  --brand: #1c3f95;        /* ISW blue */
+  --brand-dark: #14306f;
   --brand-contrast: #ffffff;
-  --accent: #f59e0b;
+  --accent: #dbe4f7;       /* pale blue for pills on the dark bar */
   --danger: #dc2626;
   --nav-height: 56px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -72,9 +73,16 @@ button {
 }
 
 .topbar .brand {
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
   white-space: nowrap;
+}
+.topbar .brand img {
+  height: 26px;
+  width: auto;
+  display: block;
 }
 
 .topbar nav {
@@ -86,11 +94,11 @@ button {
 .topbar nav a {
   padding: 8px 12px;
   border-radius: 6px;
-  color: #cbd5e1;
+  color: rgba(255, 255, 255, 0.78);
 }
 
 .topbar nav a.active {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.16);
   color: #fff;
 }
 
@@ -210,7 +218,7 @@ button {
 }
 .role-admin {
   background: var(--accent);
-  color: #1f2937;
+  color: var(--brand-dark);
 }
 
 /* ---------- Buttons ---------- */
@@ -376,19 +384,20 @@ textarea:focus {
   max-width: 380px;
 }
 .login-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-  font-weight: 700;
-  font-size: 18px;
+  margin: 4px 0 18px;
 }
-.login-mark {
-  background: var(--brand);
-  color: var(--accent);
-  padding: 4px 8px;
-  border-radius: 6px;
-  letter-spacing: 0.05em;
+.login-brand img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.login-sub {
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 6px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 .center-screen {
   min-height: 100dvh;
