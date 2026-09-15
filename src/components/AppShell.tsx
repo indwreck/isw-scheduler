@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { isSupabaseConfigured } from '../lib/supabase'
+import { useAuth } from '../lib/auth'
 
 const NAV = [
   { to: '/schedule', label: 'Schedule', icon: CalendarIcon },
@@ -10,6 +11,7 @@ const NAV = [
 ]
 
 export default function AppShell() {
+  const { profile, signOut } = useAuth()
   return (
     <div className="app">
       <header className="topbar">
@@ -22,6 +24,17 @@ export default function AppShell() {
           ))}
         </nav>
         <span className="spacer" />
+        {profile && (
+          <span className="topbar-user">
+            <span className="topbar-name">{profile.full_name}</span>
+            <span className={`role-pill role-${profile.role}`}>
+              {profile.role === 'admin' ? 'Admin' : 'Manager'}
+            </span>
+            <button className="btn btn-ghost btn-sm" onClick={signOut}>
+              Sign out
+            </button>
+          </span>
+        )}
       </header>
 
       <main className="content">
