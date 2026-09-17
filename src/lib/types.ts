@@ -82,6 +82,7 @@ export interface Project {
   custom_work_days: number[] | null
   custom_start_time: string | null
   custom_end_time: string | null
+  work_types: WorkType[]
   notes: string
   created_by: string | null
   created_at: string
@@ -114,4 +115,46 @@ export const DEFAULT_VISIBLE_STATUSES: ProjectStatus[] = [
   'in_permitting',
   'ready_to_start',
   'active',
+]
+
+// ---- Work types & permits (migration 0002) ----
+
+export type WorkType = 'total' | 'selective' | 'interior' | 'site'
+
+export const WORK_TYPE_LABELS: Record<WorkType, string> = {
+  total: 'Total demo',
+  selective: 'Selective demo',
+  interior: 'Interior demo',
+  site: 'Site work',
+}
+export const WORK_TYPE_ORDER: WorkType[] = ['total', 'selective', 'interior', 'site']
+
+export type PermitStatus = 'not_started' | 'requested' | 'complete' | 'not_required'
+
+export const PERMIT_STATUS_LABELS: Record<PermitStatus, string> = {
+  not_started: 'Not started',
+  requested: 'Requested',
+  complete: 'Complete',
+  not_required: 'Not required',
+}
+
+export interface ProjectPermit {
+  id: number
+  project_id: number
+  item: string
+  status: PermitStatus
+  status_date: string | null
+  note: string
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+/** Standard checklist added automatically when a project includes Total demo. */
+export const TOTAL_DEMO_PERMIT_ITEMS = [
+  'Water disconnect',
+  'Fire protection line',
+  'Gas disconnect',
+  'Electric disconnect',
+  'Demolition permit',
 ]

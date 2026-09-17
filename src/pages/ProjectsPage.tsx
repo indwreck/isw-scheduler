@@ -8,13 +8,18 @@ import {
   DEFAULT_VISIBLE_STATUSES,
   PROJECT_STATUS_LABELS,
   PROJECT_STATUS_ORDER,
+  WORK_TYPE_LABELS,
   type Project,
   type ProjectStatus,
 } from '../lib/types'
 
+/** permits per project: [done, needed] (not-required items are excluded) */
+type PermitProgress = Record<number, [number, number]>
+
 export default function ProjectsPage() {
   const { companyCalendar } = useLookups()
   const [projects, setProjects] = useState<Project[]>([])
+  const [permits, setPermits] = useState<PermitProgress>({})
   const [loading, setLoading] = useState(true)
   const [err, setErr] = useState<string | null>(null)
   const [showAll, setShowAll] = useState(false)
@@ -35,6 +40,20 @@ export default function ProjectsPage() {
         if (error) setErr(error.message)
         else setProjects((data as Project[]) ?? [])
         setLoading(false)
+      })
+    supabase
+      .from('project_permits')
+      .select('project_id,status')
+      .then(({ data }) => {
+        const prog: PermitProgress = {}
+        for (const r of (data ?? []) as { project_id: number; status: string }[]) {
+          if (r.status === 'not_required') continue
+          const cur = prog[r.project_id] ?? [0, 0]
+          cur[1]++
+          if (r.status === 'complete') cur[0]++
+          prog[r.project_id] = cur
+        }
+        setPermits(prog)
       })
   }, [])
 
@@ -108,7 +127,7 @@ export default function ProjectsPage() {
       ) : (
         <ul className="project-list">
           {visible.map((p) => (
-            <ProjectRow key={p.id} p={p} calendar={companyCalendar} />
+            <ProjectRow key={p.id} p={p} calendar={companyCalendar} permits={permits[p.id]} />
           ))}
         </ul>
       )}
@@ -119,9 +138,11 @@ export default function ProjectsPage() {
 function ProjectRow({
   p,
   calendar,
+  permits,
 }: {
   p: Project
   calendar: ReturnType<typeof useLookups>['companyCalendar']
+  permits?: [number, number]
 }) {
   const cal = p.use_company_calendar || !p.custom_work_days
     ? calendar
@@ -138,6 +159,20 @@ function ProjectRow({
         <div className="project-main">
           <div className="project-name">{p.name}</div>
           {p.address && <div className="sub">{p.address}</div>}
+          {(p.work_types?.length > 0 || permits) && (
+            <div className="tag-row">
+              {p.work_types?.map((w) => (
+                <span key={w} className="tag">
+                  {WORK_TYPE_LABELS[w]}
+                </span>
+              ))}
+              {permits && permits[1] > 0 && (
+                <span className={`tag ${permits[0] === permits[1] ? 'tag-ok' : 'tag-warn'}`}>
+                  Permits {permits[0]} of {permits[1]}
+                </span>
+              )}
+            </div>
+          )}
         </div>
         <div className="project-meta">
           <span className={`status-pill status-${p.status}`}>

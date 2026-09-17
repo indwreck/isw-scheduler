@@ -45,14 +45,26 @@ const MOCK = {
   personnel_roles: ['Operator', 'Laborer', 'Foreman', 'Superintendent', 'Truck Driver']
     .map((n, i) => ({ id: i + 1, name: n, sort_order: i + 1, is_active: i !== 4 })),
   projects: [
-    { id: 1, name: 'Zoetis Building Demolition', address: '1234 NE Douglas St, Lee\u2019s Summit, MO', status: 'active', start_type: 'confirmed', planned_start: '2026-09-08', planned_end: '2026-10-30', est_duration_days: null, use_company_calendar: true, custom_work_days: null, custom_start_time: null, custom_end_time: null, notes: '', created_by: null, created_at: '', updated_at: '' },
-    { id: 2, name: 'Westward Parking Garage', address: '900 Westward Dr, Kansas City, MO', status: 'in_permitting', start_type: 'tentative', planned_start: '2026-10-05', planned_end: null, est_duration_days: 15, use_company_calendar: true, custom_work_days: null, custom_start_time: null, custom_end_time: null, notes: 'Night work may be required near the hotel entrance.', created_by: null, created_at: '', updated_at: '' },
-    { id: 3, name: 'Riverfront Outlet Mall', address: '1 Riverfront Plaza, Lawrence, KS', status: 'awarded', start_type: 'tentative', planned_start: null, planned_end: null, est_duration_days: 40, use_company_calendar: false, custom_work_days: [1,2,3,4], custom_start_time: '06:00:00', custom_end_time: '16:30:00', notes: '', created_by: null, created_at: '', updated_at: '' },
-    { id: 4, name: 'Lenexa Fire Station 6', address: 'Lenexa, KS', status: 'closed', start_type: 'confirmed', planned_start: '2026-06-01', planned_end: '2026-06-19', est_duration_days: null, use_company_calendar: true, custom_work_days: null, custom_start_time: null, custom_end_time: null, notes: '', created_by: null, created_at: '', updated_at: '' },
+    { id: 1, name: 'Zoetis Building Demolition', address: '1234 NE Douglas St, Lee\u2019s Summit, MO', work_types: ['total','site'], status: 'active', start_type: 'confirmed', planned_start: '2026-09-08', planned_end: '2026-10-30', est_duration_days: null, use_company_calendar: true, custom_work_days: null, custom_start_time: null, custom_end_time: null, notes: '', created_by: null, created_at: '', updated_at: '' },
+    { id: 2, name: 'Westward Parking Garage', address: '900 Westward Dr, Kansas City, MO', work_types: ['total'], status: 'in_permitting', start_type: 'tentative', planned_start: '2026-10-05', planned_end: null, est_duration_days: 15, use_company_calendar: true, custom_work_days: null, custom_start_time: null, custom_end_time: null, notes: 'Night work may be required near the hotel entrance.', created_by: null, created_at: '', updated_at: '' },
+    { id: 3, name: 'Riverfront Outlet Mall', address: '1 Riverfront Plaza, Lawrence, KS', work_types: ['selective','interior'], status: 'awarded', start_type: 'tentative', planned_start: null, planned_end: null, est_duration_days: 40, use_company_calendar: false, custom_work_days: [1,2,3,4], custom_start_time: '06:00:00', custom_end_time: '16:30:00', notes: '', created_by: null, created_at: '', updated_at: '' },
+    { id: 4, name: 'Lenexa Fire Station 6', address: 'Lenexa, KS', work_types: ['total'], status: 'closed', start_type: 'confirmed', planned_start: '2026-06-01', planned_end: '2026-06-19', est_duration_days: null, use_company_calendar: true, custom_work_days: null, custom_start_time: null, custom_end_time: null, notes: '', created_by: null, created_at: '', updated_at: '' },
   ],
   project_contacts: [
     { id: 1, project_id: 2, name: 'Rachel Heathman', company: 'McCownGordon', role: 'Project Manager', phone: '816-555-0100', email: 'rheathman@example.com', notes: '' },
     { id: 2, project_id: 2, name: 'Mike Jones', company: 'McCownGordon', role: 'Superintendent', phone: '816-555-0101', email: '', notes: 'On site from 6 AM' },
+  ],
+  project_permits: [
+    { id: 1, project_id: 2, item: 'Water disconnect', status: 'complete', status_date: '2026-09-10', note: 'KC Water conf #44821', sort_order: 1, created_at: '', updated_at: '' },
+    { id: 2, project_id: 2, item: 'Fire protection line', status: 'not_required', status_date: null, note: 'No sprinkler service at this address', sort_order: 2, created_at: '', updated_at: '' },
+    { id: 3, project_id: 2, item: 'Gas disconnect', status: 'requested', status_date: '2026-09-14', note: 'Spire ticket 118203', sort_order: 3, created_at: '', updated_at: '' },
+    { id: 4, project_id: 2, item: 'Electric disconnect', status: 'not_started', status_date: null, note: '', sort_order: 4, created_at: '', updated_at: '' },
+    { id: 5, project_id: 2, item: 'Demolition permit', status: 'not_started', status_date: null, note: '', sort_order: 5, created_at: '', updated_at: '' },
+    { id: 6, project_id: 2, item: 'Right-of-way / sidewalk closure', status: 'requested', status_date: '2026-09-15', note: '', sort_order: 6, created_at: '', updated_at: '' },
+    { id: 7, project_id: 1, item: 'Water disconnect', status: 'complete', status_date: '2026-08-20', note: '', sort_order: 1, created_at: '', updated_at: '' },
+    { id: 8, project_id: 1, item: 'Gas disconnect', status: 'complete', status_date: '2026-08-22', note: '', sort_order: 2, created_at: '', updated_at: '' },
+    { id: 9, project_id: 1, item: 'Electric disconnect', status: 'complete', status_date: '2026-08-25', note: '', sort_order: 3, created_at: '', updated_at: '' },
+    { id: 10, project_id: 1, item: 'Demolition permit', status: 'complete', status_date: '2026-09-01', note: 'LS permit DEM-2026-0412', sort_order: 4, created_at: '', updated_at: '' },
   ],
   personnel: [], equipment: [], assignments: [], personnel_entries: [],
 }

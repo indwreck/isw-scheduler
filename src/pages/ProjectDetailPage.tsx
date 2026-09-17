@@ -7,12 +7,19 @@ import { useLookups } from '../lib/lookups'
 import { countWorkingDays, endAfterWorkingDays } from '../lib/workdays'
 import {
   DAY_LABELS,
+  PERMIT_STATUS_LABELS,
   PROJECT_STATUS_LABELS,
   PROJECT_STATUS_ORDER,
+  TOTAL_DEMO_PERMIT_ITEMS,
+  WORK_TYPE_LABELS,
+  WORK_TYPE_ORDER,
+  type PermitStatus,
   type Project,
   type ProjectContact,
+  type ProjectPermit,
   type ProjectStatus,
   type StartType,
+  type WorkType,
 } from '../lib/types'
 
 type Draft = {
@@ -20,6 +27,7 @@ type Draft = {
   address: string
   status: ProjectStatus
   start_type: StartType
+  work_types: WorkType[]
   planned_start: string
   planned_end: string
   est_duration_days: string
@@ -35,6 +43,7 @@ const EMPTY: Draft = {
   address: '',
   status: 'awarded',
   start_type: 'tentative',
+  work_types: [],
   planned_start: '',
   planned_end: '',
   est_duration_days: '',
@@ -51,6 +60,7 @@ function toDraft(p: Project): Draft {
     address: p.address,
     status: p.status,
     start_type: p.start_type,
+    work_types: p.work_types ?? [],
     planned_start: p.planned_start ?? '',
     planned_end: p.planned_end ?? '',
     est_duration_days: p.est_duration_days ? String(p.est_duration_days) : '',
@@ -130,6 +140,7 @@ export default function ProjectDetailPage() {
       address: draft.address.trim(),
       status: draft.status,
       start_type: draft.start_type,
+      work_types: draft.work_types,
       planned_start: draft.planned_start || null,
       planned_end: draft.planned_end || null,
       est_duration_days: draft.est_duration_days ? Number(draft.est_duration_days) : null,
@@ -145,6 +156,15 @@ export default function ProjectDetailPage() {
         .insert({ ...row, created_by: session?.user.id })
         .select('id')
         .single()
+      if (!error && draft.work_types.includes('total')) {
+        await supabase.from('project_permits').insert(
+          TOTAL_DEMO_PERMIT_ITEMS.map((item, i) => ({
+            project_id: data.id,
+            item,
+            sort_order: i + 1,
+          })),
+        )
+      }
       setSaving(false)
       if (error) return setErr(friendly(error.message))
       navigate(`/projects/${data.id}`, { replace: true })
@@ -234,6 +254,32 @@ export default function ProjectDetailPage() {
                     {t === 'tentative' ? 'Tentative' : 'Confirmed'}
                   </label>
                 ))}
+              </div>
+            </div>
+            <div className="field span-2">
+              <span>Type of work (pick all that apply)</span>
+              <div className="check-row">
+                {WORK_TYPE_ORDER.map((w) => {
+                  const on = draft.work_types.includes(w)
+                  return (
+                    <label key={w} className={`check-chip ${on ? 'on' : ''}`}>
+                      <input
+                        type="checkbox"
+                        hidden
+                        checked={on}
+                        onChange={() =>
+                          set(
+                            'work_types',
+                            on
+                              ? draft.work_types.filter((x) => x !== w)
+                              : WORK_TYPE_ORDER.filter((x) => x === w || draft.work_types.includes(x)),
+                          )
+                        }
+                      />
+                      {WORK_TYPE_LABELS[w]}
+                    </label>
+                  )
+                })}
               </div>
             </div>
           </div>
@@ -410,6 +456,10 @@ export default function ProjectDetailPage() {
         </div>
       </form>
 
+      {!isNew && (
+        <PermitsSection projectId={Number(id)} isTotalDemo={orig.work_types.includes('total')} />
+      )}
+
       {!isNew && <ContactsSection projectId={Number(id)} />}
 
       {!isNew && isAdmin && (
@@ -426,6 +476,235 @@ export default function ProjectDetailPage() {
       )}
     </section>
   )
+}
+
+/* =========================================================================
+   Permits & utility disconnects
+   ========================================================================= */
+
+const PERMIT_STATUS_ORDER: PermitStatus[] = ['not_started', 'requested', 'complete', 'not_required']
+// short labels for the segmented control (full labels live in PERMIT_STATUS_LABELS)
+const PERMIT_SHORT: Record<PermitStatus, string> = {
+  not_started: 'To do',
+  requested: 'Requested',
+  complete: 'Done',
+  not_required: 'N/A',
+}
+
+function PermitsSection({ projectId, isTotalDemo }: { projectId: number; isTotalDemo: boolean }) {
+  const [items, setItems] = useState<ProjectPermit[]>([])
+  const [loaded, setLoaded] = useState(false)
+  const [newItem, setNewItem] = useState('')
+  const [editingNote, setEditingNote] = useState<number | null>(null)
+  const [noteDraft, setNoteDraft] = useState('')
+  const [err, setErr] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  async function load() {
+    if (!supabase) return
+    const { data, error } = await supabase
+      .from('project_permits')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('sort_order')
+      .order('id')
+    if (error) setErr(error.message)
+    else setItems((data as ProjectPermit[]) ?? [])
+    setLoaded(true)
+  }
+  useEffect(() => {
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId])
+
+  async function addStandard() {
+    if (!supabase) return
+    setBusy(true)
+    const existing = new Set(items.map((i) => i.item.toLowerCase()))
+    const rows = TOTAL_DEMO_PERMIT_ITEMS.filter((n) => !existing.has(n.toLowerCase())).map(
+      (item, i) => ({ project_id: projectId, item, sort_order: items.length + i + 1 }),
+    )
+    if (rows.length) {
+      const { error } = await supabase.from('project_permits').insert(rows)
+      if (error) setErr(error.message)
+    }
+    setBusy(false)
+    load()
+  }
+
+  async function addCustom(e: FormEvent) {
+    e.preventDefault()
+    if (!supabase || !newItem.trim()) return
+    setBusy(true)
+    const { error } = await supabase.from('project_permits').insert({
+      project_id: projectId,
+      item: newItem.trim(),
+      sort_order: (items.at(-1)?.sort_order ?? 0) + 1,
+    })
+    setBusy(false)
+    if (error) return setErr(error.message)
+    setNewItem('')
+    load()
+  }
+
+  async function patch(p: ProjectPermit, changes: Partial<ProjectPermit>) {
+    if (!supabase) return
+    // optimistic update so the row doesn't flicker
+    setItems((cur) => cur.map((x) => (x.id === p.id ? { ...x, ...changes } : x)))
+    const { error } = await supabase.from('project_permits').update(changes).eq('id', p.id)
+    if (error) {
+      setErr(error.message)
+      load()
+    }
+  }
+
+  function setStatus(p: ProjectPermit, status: PermitStatus) {
+    const today = format(new Date(), 'yyyy-MM-dd')
+    // stamp today's date when moving to requested/complete and no date set yet
+    const status_date =
+      status === 'requested' || status === 'complete' ? (p.status_date ?? today) : p.status_date
+    patch(p, { status, status_date })
+  }
+
+  async function remove(p: ProjectPermit) {
+    if (!supabase) return
+    if (!confirm(`Remove "${p.item}" from this checklist?`)) return
+    const { error } = await supabase.from('project_permits').delete().eq('id', p.id)
+    if (error) setErr(error.message)
+    else load()
+  }
+
+  const needed = items.filter((i) => i.status !== 'not_required').length
+  const doneNeeded = items.filter((i) => i.status === 'complete').length
+
+  return (
+    <div className="card section">
+      <div className="page-head" style={{ marginBottom: 4 }}>
+        <h2 className="section-title" style={{ margin: 0 }}>
+          Permits &amp; disconnects
+        </h2>
+        {items.length > 0 && (
+          <span className={`status-pill ${doneNeeded === needed ? 'status-active' : 'status-in_permitting'}`}>
+            {doneNeeded} of {needed} done
+          </span>
+        )}
+      </div>
+      <p className="section-help">
+        Everything that has to be cleared before the job can start. Tap a status to change it.
+      </p>
+
+      {err && <div className="alert-error">{err}</div>}
+
+      {loaded && items.length === 0 && (
+        <div className="empty" style={{ textAlign: 'left', padding: '4px 0 12px' }}>
+          {isTotalDemo
+            ? 'No checklist yet for this total demo.'
+            : 'Nothing tracked. Selective and interior jobs usually need no permits — add items only if this one does.'}
+          {isTotalDemo && (
+            <div style={{ marginTop: 8 }}>
+              <button type="button" className="btn btn-sm btn-primary" disabled={busy} onClick={addStandard}>
+                Add standard total-demo items
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {items.length > 0 && (
+        <ul className="list permit-list">
+          {items.map((p) => (
+            <li key={p.id} className={p.status === 'not_required' ? 'inactive' : ''}>
+              <div className="grow">
+                <div className="permit-item">{p.item}</div>
+                <div className="sub">
+                  {p.status_date && <span>{fmtShort(p.status_date)}</span>}
+                  {p.status_date && p.note && ' · '}
+                  {editingNote === p.id ? (
+                    <input
+                      type="text"
+                      autoFocus
+                      value={noteDraft}
+                      placeholder="Confirmation #, who you spoke to…"
+                      onChange={(e) => setNoteDraft(e.target.value)}
+                      onBlur={() => {
+                        patch(p, { note: noteDraft.trim() })
+                        setEditingNote(null)
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                        if (e.key === 'Escape') setEditingNote(null)
+                      }}
+                      style={{ marginTop: 4 }}
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      className="link-btn"
+                      onClick={() => {
+                        setNoteDraft(p.note)
+                        setEditingNote(p.id)
+                      }}
+                    >
+                      {p.note || 'add note'}
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="permit-controls">
+                <div className="seg">
+                  {PERMIT_STATUS_ORDER.map((st) => (
+                    <button
+                      key={st}
+                      type="button"
+                      className={`seg-btn seg-${st} ${p.status === st ? 'on' : ''}`}
+                      onClick={() => setStatus(p, st)}
+                      title={PERMIT_STATUS_LABELS[st]}
+                    >
+                      {PERMIT_SHORT[st]}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  type="date"
+                  className="permit-date"
+                  value={p.status_date ?? ''}
+                  onChange={(e) => patch(p, { status_date: e.target.value || null })}
+                  title="Date requested / completed"
+                />
+                <button type="button" className="btn btn-sm" onClick={() => remove(p)} title="Remove">
+                  ✕
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <form className="row" onSubmit={addCustom} style={{ marginTop: 12 }}>
+        <label className="field">
+          <span>Add another permit or disconnect</span>
+          <input
+            type="text"
+            placeholder="e.g. Right-of-way permit, Sewer cap"
+            value={newItem}
+            onChange={(e) => setNewItem(e.target.value)}
+          />
+        </label>
+        <button type="submit" className="btn" disabled={busy || !newItem.trim()}>
+          Add
+        </button>
+        {isTotalDemo && items.length > 0 && items.length < TOTAL_DEMO_PERMIT_ITEMS.length && (
+          <button type="button" className="btn" disabled={busy} onClick={addStandard}>
+            Add missing standard items
+          </button>
+        )}
+      </form>
+    </div>
+  )
+}
+
+function fmtShort(iso: string) {
+  return format(parseISO(iso), 'MMM d')
 }
 
 /* =========================================================================
