@@ -69,7 +69,23 @@ const MOCK = {
   invited_users: [
     { id: 1, email: 'danny@indwreck.com', role: 'manager', invited_by: USER_ID, created_at: '2026-09-18T12:00:00Z', accepted_at: null },
   ],
-  personnel: [], equipment: [], assignments: [], personnel_entries: [],
+  personnel: [
+    { id: 1, full_name: 'John Smith', role_id: 1, is_active: true, phone: '816-555-0110', email: '', notes: 'CDL Class A', created_at: '', updated_at: '' },
+    { id: 2, full_name: 'Mike Jones', role_id: 2, is_active: true, phone: '', email: '', notes: '', created_at: '', updated_at: '' },
+    { id: 3, full_name: 'Danny', role_id: 3, is_active: true, phone: '', email: '', notes: '', created_at: '', updated_at: '' },
+    { id: 4, full_name: 'Alan', role_id: 4, is_active: true, phone: '', email: '', notes: '', created_at: '', updated_at: '' },
+    { id: 5, full_name: 'Carlos Reyes', role_id: 2, is_active: true, phone: '', email: '', notes: '', created_at: '', updated_at: '' },
+    { id: 6, full_name: 'Terry Old', role_id: 1, is_active: false, phone: '', email: '', notes: '', created_at: '', updated_at: '' },
+  ],
+  personnel_entries: [
+    { id: 1, personnel_id: 2, entry_date: '2026-09-14', entry_type: 'late', description: '25 min late, no call', severity: null, entered_by: USER_ID, created_at: '', profiles: { full_name: 'Chuck Cacioppo III' } },
+    { id: 2, personnel_id: 2, entry_date: '2026-09-02', entry_type: 'no_show', description: 'No call, no show. Reached him at noon.', severity: null, entered_by: USER_ID, created_at: '', profiles: { full_name: 'Chuck Cacioppo III' } },
+    { id: 3, personnel_id: 2, entry_date: '2026-08-20', entry_type: 'positive', description: 'Stayed late to finish the slab so we could pour Monday.', severity: null, entered_by: '2', created_at: '', profiles: { full_name: 'Danny' } },
+    { id: 4, personnel_id: 2, entry_date: '2026-07-03', entry_type: 'time_off', description: 'Approved — family trip', severity: null, entered_by: USER_ID, created_at: '', profiles: { full_name: 'Chuck Cacioppo III' } },
+    { id: 5, personnel_id: 1, entry_date: '2026-09-10', entry_type: 'positive', description: 'Caught the gas line the locate missed.', severity: null, entered_by: USER_ID, created_at: '', profiles: { full_name: 'Chuck Cacioppo III' } },
+    { id: 6, personnel_id: 5, entry_date: '2026-08-28', entry_type: 'write_up', description: 'Operating skid steer without seatbelt after being told twice.', severity: 2, entered_by: USER_ID, created_at: '', profiles: { full_name: 'Chuck Cacioppo III' } },
+  ],
+  equipment: [], assignments: [],
 }
 
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' })

@@ -174,3 +174,39 @@ export interface InvitedUser {
   created_at: string
   accepted_at: string | null
 }
+
+// ---- Personnel ----
+
+export interface Person {
+  id: number
+  full_name: string
+  role_id: number | null
+  is_active: boolean
+  phone: string
+  email: string
+  notes: string
+  created_at: string
+  updated_at: string
+}
+
+export interface PersonnelEntry {
+  id: number
+  personnel_id: number
+  entry_date: string
+  entry_type: EntryType
+  description: string
+  severity: number | null
+  entered_by: string | null
+  created_at: string
+  /** joined from profiles when selected */
+  profiles?: { full_name: string } | null
+}
+
+export const ENTRY_TYPE_ORDER: EntryType[] = [
+  'time_off',
+  'no_show',
+  'late',
+  'write_up',
+  'positive',
+  'general',
+]
