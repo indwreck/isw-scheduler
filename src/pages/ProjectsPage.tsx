@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase'
 import { useLookups } from '../lib/lookups'
 import { endAfterWorkingDays } from '../lib/workdays'
 import {
-  DEFAULT_VISIBLE_STATUSES,
+  LIST_HIDDEN_STATUSES,
   PROJECT_STATUS_LABELS,
   PROJECT_STATUS_ORDER,
   WORK_TYPE_LABELS,
@@ -61,7 +61,7 @@ export default function ProjectsPage() {
     const needle = q.trim().toLowerCase()
     return projects.filter((p) => {
       if (filter !== 'all' && p.status !== filter) return false
-      if (filter === 'all' && !showAll && !DEFAULT_VISIBLE_STATUSES.includes(p.status))
+      if (filter === 'all' && !showAll && LIST_HIDDEN_STATUSES.includes(p.status))
         return false
       if (needle && !`${p.name} ${p.address}`.toLowerCase().includes(needle)) return false
       return true
@@ -69,7 +69,7 @@ export default function ProjectsPage() {
   }, [projects, filter, showAll, q])
 
   const hiddenCount = projects.filter(
-    (p) => !DEFAULT_VISIBLE_STATUSES.includes(p.status),
+    (p) => LIST_HIDDEN_STATUSES.includes(p.status),
   ).length
 
   return (

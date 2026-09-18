@@ -7,6 +7,7 @@ export type ProjectStatus =
   | 'in_permitting'
   | 'ready_to_start'
   | 'active'
+  | 'completed'
   | 'on_hold'
   | 'closed'
 
@@ -15,6 +16,7 @@ export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
   in_permitting: 'In Permitting',
   ready_to_start: 'Ready to Start',
   active: 'Active',
+  completed: 'Completed',
   on_hold: 'On Hold',
   closed: 'Closed',
 }
@@ -105,17 +107,22 @@ export const PROJECT_STATUS_ORDER: ProjectStatus[] = [
   'in_permitting',
   'ready_to_start',
   'active',
+  'completed',
   'on_hold',
   'closed',
 ]
 
-/** Statuses shown by default on lists and the schedule (spec §3.1). */
-export const DEFAULT_VISIBLE_STATUSES: ProjectStatus[] = [
+/** Statuses the Schedule shows by default — jobs that still need crews/equipment. */
+export const SCHEDULE_VISIBLE_STATUSES: ProjectStatus[] = [
   'awarded',
   'in_permitting',
   'ready_to_start',
   'active',
 ]
+
+/** Statuses hidden on the Projects list unless "Show On Hold & Closed" is ticked.
+ *  Completed (work done, not yet paid) stays visible so it isn't forgotten. */
+export const LIST_HIDDEN_STATUSES: ProjectStatus[] = ['on_hold', 'closed']
 
 // ---- Work types & permits (migration 0002) ----
 

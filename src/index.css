@@ -602,6 +602,11 @@ textarea:focus {
   color: #166534;
   border-color: #bbf7d0;
 }
+.status-completed {
+  background: #e0e7ff;
+  color: #1e3a8a;
+  border-color: #c7d2fe;
+}
 .status-on_hold {
   background: #f1f5f9;
   color: #475569;
@@ -763,4 +768,22 @@ textarea:focus {
   background: #dcfce7;
   color: #166534;
   border-color: #bbf7d0;
+}
+
+/* ---------- Sticky save bar on detail pages ---------- */
+
+.save-bar.sticky {
+  position: sticky;
+  bottom: calc(var(--nav-height) + var(--safe-bottom) + 8px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.12);
+  z-index: 5;
+}
+@media (min-width: 900px) {
+  .save-bar.sticky {
+    bottom: 16px;
+  }
 }
