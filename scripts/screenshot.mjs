@@ -66,6 +66,9 @@ const MOCK = {
     { id: 9, project_id: 1, item: 'Electric disconnect', status: 'complete', status_date: '2026-08-25', note: '', sort_order: 3, created_at: '', updated_at: '' },
     { id: 10, project_id: 1, item: 'Demolition permit', status: 'complete', status_date: '2026-09-01', note: 'LS permit DEM-2026-0412', sort_order: 4, created_at: '', updated_at: '' },
   ],
+  invited_users: [
+    { id: 1, email: 'danny@indwreck.com', role: 'manager', invited_by: USER_ID, created_at: '2026-09-18T12:00:00Z', accepted_at: null },
+  ],
   personnel: [], equipment: [], assignments: [], personnel_entries: [],
 }
 
@@ -83,6 +86,7 @@ for (const [tag, viewport] of [['phone', { width: 390, height: 844 }], ['desktop
       // honor simple `col=eq.value` filters like PostgREST would
       for (const [k, v] of url.searchParams) {
         if (v.startsWith('eq.')) rows = rows.filter((row) => String(row[k]) === v.slice(3))
+        if (v === 'is.null') rows = rows.filter((row) => row[k] === null)
       }
       return r.fulfill({ json: single ? rows[0] : rows })
     }

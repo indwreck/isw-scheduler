@@ -70,6 +70,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = useCallback(
     async (email: string, password: string, fullName: string) => {
       if (!supabase) return 'App is not connected to a database.'
+      // Invite-only: check the address before trying to create the account
+      const { data: invited } = await supabase.rpc('is_invited', { check_email: email })
+      if (invited === false) return 'NOT_INVITED'
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -115,6 +118,7 @@ function friendly(msg: string): string {
   if (/email not confirmed/i.test(msg))
     return 'Please confirm your email first — check your inbox for the link.'
   if (/already registered/i.test(msg)) return 'That email already has an account. Sign in instead.'
+  if (/NOT_INVITED|Database error saving new user/i.test(msg)) return 'NOT_INVITED'
   if (/password/i.test(msg) && /6/.test(msg)) return 'Password must be at least 6 characters.'
   return msg
 }

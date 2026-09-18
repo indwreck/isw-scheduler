@@ -6,9 +6,12 @@ import {
   DAY_LABELS,
   type CompanySettings,
   type Holiday,
+  type InvitedUser,
   type LookupItem,
   type Profile,
 } from '../lib/types'
+
+const APP_URL = 'https://indwreck.github.io/isw-scheduler/'
 
 export default function SettingsPage() {
   const { isAdmin } = useAuth()
@@ -37,6 +40,7 @@ export default function SettingsPage() {
         help="Each employee has one primary role. Also used for role planning blocks (e.g. “Operators × 2”)."
         placeholder="New role (e.g. Operator)"
       />
+      <InvitesSection canEdit={isAdmin} />
       <UsersSection canEdit={isAdmin} />
     </section>
   )
@@ -473,6 +477,137 @@ function LookupSection({
 }
 
 /* =========================================================================
+   Invitations (invite-only sign-up)
+   ========================================================================= */
+
+function InvitesSection({ canEdit }: { canEdit: boolean }) {
+  const { session } = useAuth()
+  const [invites, setInvites] = useState<InvitedUser[]>([])
+  const [email, setEmail] = useState('')
+  const [role, setRole] = useState<InvitedUser['role']>('manager')
+  const [err, setErr] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  async function load() {
+    if (!supabase) return
+    const { data, error } = await supabase
+      .from('invited_users')
+      .select('*')
+      .is('accepted_at', null)
+      .order('created_at')
+    if (error) setErr(error.message)
+    else setInvites((data as InvitedUser[]) ?? [])
+  }
+  useEffect(() => {
+    load()
+  }, [])
+
+  async function invite(e: FormEvent) {
+    e.preventDefault()
+    if (!supabase) return
+    const addr = email.trim().toLowerCase()
+    if (!addr) return
+    setBusy(true)
+    setErr(null)
+    const { error } = await supabase
+      .from('invited_users')
+      .insert({ email: addr, role, invited_by: session?.user.id })
+    setBusy(false)
+    if (error) {
+      setErr(/duplicate/i.test(error.message) ? 'That address is already invited.' : error.message)
+      return
+    }
+    setEmail('')
+    setRole('manager')
+    load()
+  }
+
+  async function remove(inv: InvitedUser) {
+    if (!supabase) return
+    if (!confirm(`Cancel the invitation for ${inv.email}?`)) return
+    const { error } = await supabase.from('invited_users').delete().eq('id', inv.id)
+    if (error) setErr(error.message)
+    else load()
+  }
+
+  function mailto(inv: InvitedUser) {
+    const subject = 'Your ISW Scheduler account'
+    const body = [
+      `You've been set up to use the ISW Scheduler.`,
+      ``,
+      `1. Go to ${APP_URL}`,
+      `2. Tap "New here? Create an account"`,
+      `3. Sign up using this exact email address: ${inv.email}`,
+      `4. Check your inbox for a confirmation link, then sign in.`,
+      ``,
+      `On an iPhone, open the link in Safari, tap Share, then "Add to Home Screen" to get the ISW icon.`,
+    ].join('\n')
+    return `mailto:${inv.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  }
+
+  return (
+    <div className="card section">
+      <h2 className="section-title">Invite someone</h2>
+      <p className="section-help">
+        Accounts are invitation-only. Add a person's email here, then send them the
+        invite. They can only sign up with that exact address.
+      </p>
+
+      {canEdit && (
+        <form className="row" onSubmit={invite} style={{ marginBottom: 12 }}>
+          <label className="field">
+            <span>Email address</span>
+            <input
+              type="email"
+              inputMode="email"
+              autoComplete="off"
+              placeholder="name@indwreck.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </label>
+          <label className="field" style={{ flex: '0 0 140px' }}>
+            <span>Access</span>
+            <select value={role} onChange={(e) => setRole(e.target.value as InvitedUser['role'])}>
+              <option value="manager">Manager</option>
+              <option value="admin">Admin</option>
+            </select>
+          </label>
+          <button className="btn btn-primary" type="submit" disabled={busy || !email.trim()}>
+            Invite
+          </button>
+        </form>
+      )}
+
+      {err && <div className="alert-error">{err}</div>}
+
+      <ul className="list">
+        {invites.length === 0 && <li className="empty">No pending invitations.</li>}
+        {invites.map((inv) => (
+          <li key={inv.id}>
+            <div className="grow">
+              <div>{inv.email}</div>
+              <div className="sub">
+                {inv.role === 'admin' ? 'Admin' : 'Manager'} · invited{' '}
+                {format(parseISO(inv.created_at), 'MMM d')} · waiting for them to sign up
+              </div>
+            </div>
+            <a className="btn btn-sm" href={mailto(inv)}>
+              Send invite email
+            </a>
+            {canEdit && (
+              <button className="btn btn-sm btn-danger" onClick={() => remove(inv)}>
+                Cancel
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+/* =========================================================================
    Users
    ========================================================================= */
 
@@ -517,9 +652,8 @@ function UsersSection({ canEdit }: { canEdit: boolean }) {
     <div className="card section">
       <h2 className="section-title">Users</h2>
       <p className="section-help">
-        Anyone who creates an account shows up here. New accounts start as
-        Manager; an Admin can promote them. Deactivating someone locks them
-        out without deleting anything.
+        Everyone with an account. Deactivating someone locks them out immediately
+        without deleting anything.
       </p>
 
       {err && <div className="alert-error">{err}</div>}

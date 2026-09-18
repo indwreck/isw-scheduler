@@ -27,6 +27,10 @@ export default function LoginPage() {
         'Account created. Check your email for a confirmation link, then come back and sign in.',
       )
       setMode('signin')
+    } else if (result === 'NOT_INVITED') {
+      setError(
+        'This email address has not been invited. Accounts are created by invitation only — ask an ISW admin to invite you, then sign up with the exact address they used.',
+      )
     } else if (result) {
       setError(result)
     }
@@ -50,6 +54,11 @@ export default function LoginPage() {
         <h1 className="page-title" style={{ fontSize: 20 }}>
           {mode === 'signin' ? 'Sign in' : 'Create your account'}
         </h1>
+        {mode === 'signup' && (
+          <p className="section-help">
+            By invitation only. Use the email address your admin invited.
+          </p>
+        )}
 
         {mode === 'signup' && (
           <label className="field">

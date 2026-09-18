@@ -158,3 +158,12 @@ export const TOTAL_DEMO_PERMIT_ITEMS = [
   'Electric disconnect',
   'Demolition permit',
 ]
+
+export interface InvitedUser {
+  id: number
+  email: string
+  role: UserRole
+  invited_by: string | null
+  created_at: string
+  accepted_at: string | null
+}
