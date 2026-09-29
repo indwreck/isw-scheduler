@@ -8,6 +8,7 @@ import ProjectDetailPage from './pages/ProjectDetailPage'
 import PersonnelPage from './pages/PersonnelPage'
 import PersonnelDetailPage from './pages/PersonnelDetailPage'
 import EquipmentPage from './pages/EquipmentPage'
+import EquipmentDetailPage from './pages/EquipmentDetailPage'
 import SchedulePage from './pages/SchedulePage'
 import SettingsPage from './pages/SettingsPage'
 
@@ -52,6 +53,8 @@ function Gate() {
           <Route path="/personnel/new" element={<PersonnelDetailPage />} />
           <Route path="/personnel/:id" element={<PersonnelDetailPage />} />
           <Route path="/equipment" element={<EquipmentPage />} />
+          <Route path="/equipment/new" element={<EquipmentDetailPage />} />
+          <Route path="/equipment/:id" element={<EquipmentDetailPage />} />
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/schedule" replace />} />

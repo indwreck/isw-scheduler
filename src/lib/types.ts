@@ -210,3 +210,20 @@ export const ENTRY_TYPE_ORDER: EntryType[] = [
   'positive',
   'general',
 ]
+
+// ---- Equipment ----
+
+export interface Equipment {
+  id: number
+  name: string
+  category_id: number | null
+  unit_number: string
+  is_active: boolean
+  make: string
+  model: string
+  model_year: number | null
+  serial_no: string
+  notes: string
+  created_at: string
+  updated_at: string
+}

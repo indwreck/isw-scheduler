@@ -85,7 +85,16 @@ const MOCK = {
     { id: 5, personnel_id: 1, entry_date: '2026-09-10', entry_type: 'positive', description: 'Caught the gas line the locate missed.', severity: null, entered_by: USER_ID, created_at: '', profiles: { full_name: 'Chuck Cacioppo III' } },
     { id: 6, personnel_id: 5, entry_date: '2026-08-28', entry_type: 'write_up', description: 'Operating skid steer without seatbelt after being told twice.', severity: 2, entered_by: USER_ID, created_at: '', profiles: { full_name: 'Chuck Cacioppo III' } },
   ],
-  equipment: [], assignments: [],
+  equipment: [
+    { id: 1, name: 'CAT 336', category_id: 1, unit_number: 'E12', is_active: true, make: 'CAT', model: '336', model_year: 2019, serial_no: '', notes: 'Shear + bucket', created_at: '', updated_at: '' },
+    { id: 2, name: 'CAT 350', category_id: 1, unit_number: 'E08', is_active: true, make: 'CAT', model: '350', model_year: 2022, serial_no: '', notes: '', created_at: '', updated_at: '' },
+    { id: 3, name: 'Komatsu PC490', category_id: 1, unit_number: 'E03', is_active: false, make: 'Komatsu', model: 'PC490', model_year: 2012, serial_no: '', notes: 'Sold 2026', created_at: '', updated_at: '' },
+    { id: 4, name: 'Bobcat T870', category_id: 2, unit_number: 'S04', is_active: true, make: 'Bobcat', model: 'T870', model_year: 2021, serial_no: '', notes: '', created_at: '', updated_at: '' },
+    { id: 5, name: 'CAT D6', category_id: 3, unit_number: 'D01', is_active: true, make: 'CAT', model: 'D6', model_year: 2015, serial_no: '', notes: '', created_at: '', updated_at: '' },
+    { id: 6, name: 'Kenworth T880', category_id: 4, unit_number: 'T11', is_active: true, make: 'Kenworth', model: 'T880', model_year: 2020, serial_no: '', notes: 'Roll-off', created_at: '', updated_at: '' },
+    { id: 7, name: 'Lowboy 55-ton', category_id: 5, unit_number: 'TR2', is_active: true, make: 'Trail King', model: '', model_year: null, serial_no: '', notes: '', created_at: '', updated_at: '' },
+  ],
+  assignments: [],
 }
 
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' })

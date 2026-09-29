@@ -850,3 +850,21 @@ textarea:focus {
 .toggle-line label {
   white-space: nowrap;
 }
+
+.group-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 6px 0 8px;
+  color: var(--brand-dark);
+}
+.unit-no {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  background: var(--brand);
+  color: #fff;
+  padding: 1px 7px;
+  border-radius: 5px;
+  margin-right: 8px;
+  vertical-align: 2px;
+}
