@@ -21,6 +21,7 @@ interface Lookups {
   holidays: Holiday[]
   categories: LookupItem[]
   roles: LookupItem[]
+  skills: LookupItem[]
   companyCalendar: WorkCalendar
   refresh: () => Promise<void>
 }
@@ -33,22 +34,25 @@ export function LookupsProvider({ children }: { children: ReactNode }) {
   const [holidays, setHolidays] = useState<Holiday[]>([])
   const [categories, setCategories] = useState<LookupItem[]>([])
   const [roles, setRoles] = useState<LookupItem[]>([])
+  const [skills, setSkills] = useState<LookupItem[]>([])
 
   const refresh = useCallback(async () => {
     if (!supabase) {
       setLoaded(true)
       return
     }
-    const [s, h, c, r] = await Promise.all([
+    const [s, h, c, r, k] = await Promise.all([
       supabase.from('company_settings').select('*').eq('id', 1).maybeSingle(),
       supabase.from('holidays').select('*').order('holiday_date'),
       supabase.from('equipment_categories').select('*').order('sort_order').order('name'),
       supabase.from('personnel_roles').select('*').order('sort_order').order('name'),
+      supabase.from('skills').select('*').order('sort_order').order('name'),
     ])
     setSettings((s.data as CompanySettings) ?? null)
     setHolidays((h.data as Holiday[]) ?? [])
     setCategories((c.data as LookupItem[]) ?? [])
     setRoles((r.data as LookupItem[]) ?? [])
+    setSkills((k.data as LookupItem[]) ?? [])
     setLoaded(true)
   }, [])
 
@@ -63,7 +67,7 @@ export function LookupsProvider({ children }: { children: ReactNode }) {
 
   return (
     <Ctx.Provider
-      value={{ loaded, settings, holidays, categories, roles, companyCalendar, refresh }}
+      value={{ loaded, settings, holidays, categories, roles, skills, companyCalendar, refresh }}
     >
       {children}
     </Ctx.Provider>

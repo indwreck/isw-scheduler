@@ -2,15 +2,18 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useLookups } from '../lib/lookups'
-import type { EntryType, Person } from '../lib/types'
+import { format } from 'date-fns'
+import type { EntryType, Person, PersonSkill } from '../lib/types'
 
 /** per person: counts of the attendance-type entries */
 type Counts = Record<number, Partial<Record<EntryType, number>>>
 
 export default function PersonnelPage() {
-  const { roles } = useLookups()
+  const { roles, skills } = useLookups()
   const [people, setPeople] = useState<Person[]>([])
   const [counts, setCounts] = useState<Counts>({})
+  const [pskills, setPskills] = useState<PersonSkill[]>([])
+  const [skillFilter, setSkillFilter] = useState<number | 'all'>('all')
   const [loading, setLoading] = useState(true)
   const [err, setErr] = useState<string | null>(null)
   const [showInactive, setShowInactive] = useState(false)
@@ -43,7 +46,15 @@ export default function PersonnelPage() {
         }
         setCounts(c)
       })
+    supabase
+      .from('personnel_skills')
+      .select('*')
+      .then(({ data }) => setPskills((data as PersonSkill[]) ?? []))
   }, [])
+
+  const skillName = (id: number) => skills.find((s) => s.id === id)?.name ?? ''
+  const skillsOf = (personId: number) => pskills.filter((ps) => ps.personnel_id === personId)
+  const today = format(new Date(), 'yyyy-MM-dd')
 
   const roleName = (id: number | null) => roles.find((r) => r.id === id)?.name ?? '—'
 
@@ -52,12 +63,16 @@ export default function PersonnelPage() {
     return people.filter((p) => {
       if (!showInactive && !p.is_active) return false
       if (roleFilter !== 'all' && p.role_id !== roleFilter) return false
-      if (needle && !`${p.full_name} ${roleName(p.role_id)}`.toLowerCase().includes(needle))
-        return false
+      const mySkills = skillsOf(p.id)
+      if (skillFilter !== 'all' && !mySkills.some((ps) => ps.skill_id === skillFilter)) return false
+      if (needle) {
+        const hay = `${p.full_name} ${roleName(p.role_id)} ${mySkills.map((ps) => skillName(ps.skill_id)).join(' ')}`.toLowerCase()
+        if (!hay.includes(needle)) return false
+      }
       return true
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [people, showInactive, roleFilter, q, roles])
+  }, [people, showInactive, roleFilter, skillFilter, q, roles, skills, pskills])
 
   const inactiveCount = people.filter((p) => !p.is_active).length
   const activeCount = people.filter((p) => p.is_active).length
@@ -74,7 +89,7 @@ export default function PersonnelPage() {
       <div className="toolbar">
         <input
           type="text"
-          placeholder="Search…"
+          placeholder="Search name, role, skill…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           className="toolbar-search"
@@ -94,6 +109,22 @@ export default function PersonnelPage() {
           ))}
         </select>
       </div>
+      {skills.length > 0 && (
+        <div className="toolbar">
+          <select
+            value={skillFilter}
+            onChange={(e) => setSkillFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+            style={{ flex: 1 }}
+          >
+            <option value="all">Any skill / certification</option>
+            {skills.filter((s) => s.is_active).map((s) => (
+              <option key={s.id} value={s.id}>
+                Has: {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div className="toggle-line" style={{ justifyContent: 'space-between' }}>
         <span>
@@ -136,7 +167,18 @@ export default function PersonnelPage() {
                       {!p.is_active && ' · inactive'}
                     </div>
                   </div>
-                  <div className="project-meta" style={{ flexDirection: 'row', gap: 4 }}>
+                  <div className="project-meta" style={{ flexDirection: 'row', gap: 4, flexWrap: 'wrap', justifyContent: 'flex-start' }}>
+                    {skillFilter !== 'all' && (() => {
+                      const m = skillsOf(p.id).find((ps) => ps.skill_id === skillFilter)
+                      return m?.expires_on ? (
+                        <span className={`tag ${m.expires_on < today ? 'tag-warn' : ''}`}>
+                          {m.expires_on < today ? 'Expired' : 'Exp'} {m.expires_on.slice(5, 7)}/{m.expires_on.slice(0, 4)}
+                        </span>
+                      ) : null
+                    })()}
+                    {skillsOf(p.id).some((ps) => ps.expires_on && ps.expires_on < today) && skillFilter === 'all' && (
+                      <span className="tag tag-warn">expired cert</span>
+                    )}
                     {c.no_show ? <span className="tag tag-warn">{c.no_show} no-show{c.no_show > 1 ? 's' : ''}</span> : null}
                     {c.late ? <span className="tag">{c.late} late</span> : null}
                     {c.write_up ? <span className="tag tag-warn">{c.write_up} write-up{c.write_up > 1 ? 's' : ''}</span> : null}

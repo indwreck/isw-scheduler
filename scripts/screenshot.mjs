@@ -44,6 +44,13 @@ const MOCK = {
     .map((n, i) => ({ id: i + 1, name: n, sort_order: i + 1, is_active: true })),
   personnel_roles: ['Operator', 'Laborer', 'Foreman', 'Superintendent', 'Truck Driver']
     .map((n, i) => ({ id: i + 1, name: n, sort_order: i + 1, is_active: i !== 4 })),
+  skills: ['CDL Class A','CDL Class B','Excavator','Dozer','Skid steer','Crusher','Aerial lift','Forklift','OSHA 10','OSHA 30','Lead worker','Competent person','First aid / CPR','Torch cutting']
+    .map((n, i) => ({ id: i + 1, name: n, sort_order: i + 1, is_active: true })),
+  personnel_skills: [
+    { personnel_id: 1, skill_id: 1, expires_on: '2027-03-01' }, { personnel_id: 1, skill_id: 3, expires_on: null }, { personnel_id: 1, skill_id: 14, expires_on: null }, { personnel_id: 1, skill_id: 9, expires_on: '2026-06-01' },
+    { personnel_id: 2, skill_id: 5, expires_on: null }, { personnel_id: 2, skill_id: 14, expires_on: null }, { personnel_id: 2, skill_id: 9, expires_on: '2028-01-15' },
+    { personnel_id: 3, skill_id: 3, expires_on: null }, { personnel_id: 3, skill_id: 4, expires_on: null }, { personnel_id: 3, skill_id: 10, expires_on: null }, { personnel_id: 3, skill_id: 12, expires_on: null },
+  ],
   projects: [
     { id: 1, name: 'Zoetis Building Demolition', address: '1234 NE Douglas St, Lee\u2019s Summit, MO', work_types: ['total','site'], status: 'active', start_type: 'confirmed', planned_start: '2026-09-08', planned_end: '2026-10-30', est_duration_days: null, use_company_calendar: true, custom_work_days: null, custom_start_time: null, custom_end_time: null, notes: '', created_by: null, created_at: '', updated_at: '' },
     { id: 2, name: 'Westward Parking Garage', address: '900 Westward Dr, Kansas City, MO', work_types: ['total'], status: 'in_permitting', start_type: 'tentative', planned_start: '2026-10-05', planned_end: null, est_duration_days: 15, use_company_calendar: true, custom_work_days: null, custom_start_time: null, custom_end_time: null, notes: 'Night work may be required near the hotel entrance.', created_by: null, created_at: '', updated_at: '' },
@@ -71,7 +78,7 @@ const MOCK = {
   ],
   personnel: [
     { id: 1, full_name: 'John Smith', role_id: 1, is_active: true, phone: '816-555-0110', email: '', notes: 'CDL Class A', created_at: '', updated_at: '' },
-    { id: 2, full_name: 'Mike Jones', role_id: 2, is_active: true, phone: '', email: '', notes: '', created_at: '', updated_at: '' },
+    { id: 2, full_name: 'Mike Jones', role_id: 2, is_active: true, phone: '816-555-0122', email: '', notes: '', birth_date: '1991-04-12', hire_date: '2020-03-02', emergency_name: 'Maria Jones (wife)', emergency_phone: '816-555-0123', created_at: '', updated_at: '' },
     { id: 3, full_name: 'Danny', role_id: 3, is_active: true, phone: '', email: '', notes: '', created_at: '', updated_at: '' },
     { id: 4, full_name: 'Alan', role_id: 4, is_active: true, phone: '', email: '', notes: '', created_at: '', updated_at: '' },
     { id: 5, full_name: 'Carlos Reyes', role_id: 2, is_active: true, phone: '', email: '', notes: '', created_at: '', updated_at: '' },

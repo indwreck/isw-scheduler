@@ -4,12 +4,14 @@ import { format, parseISO } from 'date-fns'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { useLookups } from '../lib/lookups'
+import { ageFrom, formatPhone, tenureFrom } from '../lib/format'
 import {
   ENTRY_TYPE_LABELS,
   ENTRY_TYPE_ORDER,
   type EntryType,
   type Person,
   type PersonnelEntry,
+  type PersonSkill,
 } from '../lib/types'
 
 type Draft = {
@@ -18,10 +20,25 @@ type Draft = {
   is_active: boolean
   phone: string
   email: string
+  birth_date: string
+  hire_date: string
+  emergency_name: string
+  emergency_phone: string
   notes: string
 }
 
-const EMPTY: Draft = { full_name: '', role_id: '', is_active: true, phone: '', email: '', notes: '' }
+const EMPTY: Draft = {
+  full_name: '',
+  role_id: '',
+  is_active: true,
+  phone: '',
+  email: '',
+  birth_date: '',
+  hire_date: '',
+  emergency_name: '',
+  emergency_phone: '',
+  notes: '',
+}
 
 function toDraft(p: Person): Draft {
   return {
@@ -30,6 +47,10 @@ function toDraft(p: Person): Draft {
     is_active: p.is_active,
     phone: p.phone,
     email: p.email,
+    birth_date: p.birth_date ?? '',
+    hire_date: p.hire_date ?? '',
+    emergency_name: p.emergency_name ?? '',
+    emergency_phone: p.emergency_phone ?? '',
     notes: p.notes,
   }
 }
@@ -84,6 +105,10 @@ export default function PersonnelDetailPage() {
       is_active: draft.is_active,
       phone: draft.phone.trim(),
       email: draft.email.trim(),
+      birth_date: draft.birth_date || null,
+      hire_date: draft.hire_date || null,
+      emergency_name: draft.emergency_name.trim(),
+      emergency_phone: draft.emergency_phone.trim(),
       notes: draft.notes,
     }
     if (isNew) {
@@ -158,7 +183,7 @@ export default function PersonnelDetailPage() {
                 type="tel"
                 autoComplete="off"
                 value={draft.phone}
-                onChange={(e) => set('phone', e.target.value)}
+                onChange={(e) => set('phone', formatPhone(e.target.value))}
               />
             </label>
             <label className="field">
@@ -169,6 +194,16 @@ export default function PersonnelDetailPage() {
                 value={draft.email}
                 onChange={(e) => set('email', e.target.value)}
               />
+            </label>
+            <label className="field">
+              <span>Birth date</span>
+              <input type="date" value={draft.birth_date} onChange={(e) => set('birth_date', e.target.value)} />
+              {draft.birth_date && <span className="hint" style={{ margin: '4px 0 0' }}>Age {ageFrom(draft.birth_date)}</span>}
+            </label>
+            <label className="field">
+              <span>Hire date</span>
+              <input type="date" value={draft.hire_date} onChange={(e) => set('hire_date', e.target.value)} />
+              {draft.hire_date && <span className="hint" style={{ margin: '4px 0 0' }}>With ISW {tenureFrom(draft.hire_date)}</span>}
             </label>
             <div className="field span-2">
               <span>Status</span>
@@ -196,6 +231,31 @@ export default function PersonnelDetailPage() {
             </label>
           </div>
         </div>
+
+        <div className="card section">
+          <h2 className="section-title">Emergency contact</h2>
+          <div className="form-grid">
+            <label className="field">
+              <span>Name</span>
+              <input
+                type="text"
+                autoComplete="off"
+                placeholder="e.g. Maria Jones (wife)"
+                value={draft.emergency_name}
+                onChange={(e) => set('emergency_name', e.target.value)}
+              />
+            </label>
+            <label className="field">
+              <span>Phone</span>
+              <input
+                type="tel"
+                autoComplete="off"
+                value={draft.emergency_phone}
+                onChange={(e) => set('emergency_phone', formatPhone(e.target.value))}
+              />
+            </label>
+          </div>
+        </div>
       </form>
 
       <div className="save-bar sticky" style={{ marginBottom: 20 }}>
@@ -215,6 +275,7 @@ export default function PersonnelDetailPage() {
         {msg && <span className="save-msg">{msg}</span>}
       </div>
 
+      {!isNew && <SkillsSection personId={Number(id)} />}
       {!isNew && <HistorySection personId={Number(id)} />}
 
       {!isNew && isAdmin && (
@@ -230,6 +291,126 @@ export default function PersonnelDetailPage() {
         </div>
       )}
     </section>
+  )
+}
+
+/* =========================================================================
+   Skills & certifications — tick what they hold; optional expiration.
+   ========================================================================= */
+
+function SkillsSection({ personId }: { personId: number }) {
+  const { skills } = useLookups()
+  const [mine, setMine] = useState<PersonSkill[]>([])
+  const [err, setErr] = useState<string | null>(null)
+
+  async function load() {
+    if (!supabase) return
+    const { data, error } = await supabase.from('personnel_skills').select('*').eq('personnel_id', personId)
+    if (error) setErr(error.message)
+    else setMine((data as PersonSkill[]) ?? [])
+  }
+  useEffect(() => {
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [personId])
+
+  const has = (skillId: number) => mine.find((m) => m.skill_id === skillId)
+
+  async function toggle(skillId: number) {
+    if (!supabase) return
+    const cur = has(skillId)
+    if (cur) {
+      setMine((m) => m.filter((x) => x.skill_id !== skillId))
+      const { error } = await supabase
+        .from('personnel_skills')
+        .delete()
+        .eq('personnel_id', personId)
+        .eq('skill_id', skillId)
+      if (error) {
+        setErr(error.message)
+        load()
+      }
+    } else {
+      setMine((m) => [...m, { personnel_id: personId, skill_id: skillId, expires_on: null }])
+      const { error } = await supabase.from('personnel_skills').insert({ personnel_id: personId, skill_id: skillId })
+      if (error) {
+        setErr(error.message)
+        load()
+      }
+    }
+  }
+
+  async function setExpiry(skillId: number, expires_on: string) {
+    if (!supabase) return
+    setMine((m) => m.map((x) => (x.skill_id === skillId ? { ...x, expires_on: expires_on || null } : x)))
+    const { error } = await supabase
+      .from('personnel_skills')
+      .update({ expires_on: expires_on || null })
+      .eq('personnel_id', personId)
+      .eq('skill_id', skillId)
+    if (error) {
+      setErr(error.message)
+      load()
+    }
+  }
+
+  const today = format(new Date(), 'yyyy-MM-dd')
+  const visibleSkills = skills.filter((s) => s.is_active || has(s.id))
+  const held = visibleSkills.filter((s) => has(s.id))
+
+  return (
+    <div className="card section">
+      <h2 className="section-title">Skills &amp; certifications</h2>
+      <p className="section-help">
+        Tap to add or remove. Add an expiration date for cards that lapse (OSHA, CPR, CDL medical).
+        {skills.length === 0 && ' No skills set up yet — an Admin adds them in Settings.'}
+      </p>
+      {err && <div className="alert-error">{err}</div>}
+
+      <div className="check-row" style={{ marginBottom: held.length ? 14 : 0 }}>
+        {visibleSkills.map((s) => {
+          const m = has(s.id)
+          const expired = m?.expires_on && m.expires_on < today
+          return (
+            <label key={s.id} className={`check-chip ${m ? 'on' : ''} ${expired ? 'chip-expired' : ''}`}>
+              <input type="checkbox" hidden checked={!!m} onChange={() => toggle(s.id)} />
+              {s.name}
+            </label>
+          )
+        })}
+      </div>
+
+      {held.length > 0 && (
+        <ul className="list">
+          {held.map((s) => {
+            const m = has(s.id)!
+            const expired = m.expires_on && m.expires_on < today
+            return (
+              <li key={s.id}>
+                <div className="grow">
+                  <div>{s.name}</div>
+                  <div className="sub">
+                    {m.expires_on
+                      ? expired
+                        ? <span className="severity">Expired {fmt(m.expires_on)}</span>
+                        : `Expires ${fmt(m.expires_on)}`
+                      : 'No expiration'}
+                  </div>
+                </div>
+                <input
+                  type="date"
+                  className="permit-date"
+                  value={m.expires_on ?? ''}
+                  onChange={(e) => setExpiry(s.id, e.target.value)}
+                  title="Expiration date"
+                  style={{ width: 150 }}
+                />
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </div>
   )
 }
 

@@ -5,6 +5,7 @@ import { supabase } from "../lib/supabase";
 import { useAuth } from "../lib/auth";
 import { useLookups } from "../lib/lookups";
 import { countWorkingDays, endAfterWorkingDays } from "../lib/workdays";
+import { formatPhone } from "../lib/format";
 import {
   DAY_LABELS,
   PERMIT_STATUS_LABELS,
@@ -956,7 +957,7 @@ function ContactsSection({ projectId }: { projectId: number }) {
               <input
                 type="tel"
                 value={draft.phone}
-                onChange={(e) => setDraft({ ...draft, phone: e.target.value })}
+                onChange={(e) => setDraft({ ...draft, phone: formatPhone(e.target.value) })}
               />
             </label>
             <label className="field">

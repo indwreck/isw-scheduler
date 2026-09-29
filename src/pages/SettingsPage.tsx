@@ -40,6 +40,13 @@ export default function SettingsPage() {
         help="Each employee has one primary role. Also used for role planning blocks (e.g. “Operators × 2”)."
         placeholder="New role (e.g. Operator)"
       />
+      <LookupSection
+        canEdit={isAdmin}
+        table="skills"
+        title="Skills & certifications"
+        help="Tick these on each person's page. Use the skill filter on Personnel to find who can run a machine or holds a card."
+        placeholder="New skill (e.g. Torch cutting)"
+      />
       <InvitesSection canEdit={isAdmin} />
       <UsersSection canEdit={isAdmin} />
     </section>
@@ -334,7 +341,7 @@ function LookupSection({
   placeholder,
 }: {
   canEdit: boolean
-  table: 'equipment_categories' | 'personnel_roles'
+  table: 'equipment_categories' | 'personnel_roles' | 'skills'
   title: string
   help: string
   placeholder: string

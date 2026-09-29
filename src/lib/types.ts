@@ -185,8 +185,18 @@ export interface Person {
   phone: string
   email: string
   notes: string
+  birth_date: string | null
+  hire_date: string | null
+  emergency_name: string
+  emergency_phone: string
   created_at: string
   updated_at: string
+}
+
+export interface PersonSkill {
+  personnel_id: number
+  skill_id: number
+  expires_on: string | null
 }
 
 export interface PersonnelEntry {
