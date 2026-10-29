@@ -10,21 +10,22 @@ import {
 } from './types'
 import { downloadXlsx, type Cell, type RowRule, type SheetSpec } from './xlsx'
 
-/** Row colors by status — same scheme as Chuck's original Project Status sheet. */
-const STATUS_FILL: Partial<Record<Project['status'], string>> = {
-  in_permitting: 'FFF2CC', // light yellow (was "Utilities/Permits")
-  ready_to_start: 'DDEBF7', // light blue
-  active: '5B9BD5', // blue (was "In Progress")
-  completed: 'C6E0B4', // green
-  on_hold: 'F4B183', // orange
-  closed: 'D9D9D9', // gray (new in the app)
-}
+/** Conditional-formatting rules copied one-for-one from Chuck's original
+ *  Project Status sheet (same order, same colors). The status words are the
+ *  app's labels where they differ: Utilities/Permits → In Permitting,
+ *  In Progress → Active. "Removed" is kept so flagging a row the old way
+ *  still turns it red. */
+const STATUS_RULES: { equals: string; fill: string; fontColor?: string }[] = [
+  { equals: PROJECT_STATUS_LABELS.on_hold, fill: 'F4B183' },
+  { equals: PROJECT_STATUS_LABELS.in_permitting, fill: 'FFF2CC' },
+  { equals: PROJECT_STATUS_LABELS.ready_to_start, fill: 'DDEBF7' },
+  { equals: PROJECT_STATUS_LABELS.active, fill: '5B9BD5' },
+  { equals: PROJECT_STATUS_LABELS.completed, fill: 'C6E0B4' },
+  { equals: 'Removed', fill: 'FFC7CE', fontColor: '9C0006' },
+]
 
 function statusRules(col: number, span?: [number, number]): RowRule[] {
-  return PROJECT_STATUS_ORDER.flatMap((s) => {
-    const fill = STATUS_FILL[s]
-    return fill ? [{ col, equals: PROJECT_STATUS_LABELS[s], fill, span }] : []
-  })
+  return STATUS_RULES.map((r) => ({ col, span, ...r }))
 }
 
 const STATUS_MEANING: Record<Project['status'], string> = {
@@ -39,6 +40,18 @@ const STATUS_MEANING: Record<Project['status'], string> = {
 
 function toDate(iso: string | null): Date | null {
   return iso ? parseISO(iso) : null
+}
+
+/** Keep the Notes column readable: short notes go in as-is; long or
+ *  multi-line notes show their first line and point back to the app. */
+const NOTE_LIMIT = 90
+function noteCell(notes: string): string {
+  const text = (notes ?? '').trim()
+  if (!text) return ''
+  const firstLine = text.split(/\r?\n/)[0].trim()
+  if (firstLine === text && text.length <= NOTE_LIMIT) return text
+  const preview = firstLine.length > NOTE_LIMIT ? firstLine.slice(0, NOTE_LIMIT - 1).trimEnd() + '…' : firstLine
+  return `${preview} — see notes in app`
 }
 
 export function buildProjectReport(
@@ -84,7 +97,7 @@ export function buildProjectReport(
       toDate(end),
       p.est_duration_days ?? null,
       perm && perm[1] > 0 ? `${perm[0]} of ${perm[1]}` : '',
-      p.notes,
+      noteCell(p.notes),
     ]
   })
 
@@ -104,14 +117,13 @@ export function buildProjectReport(
       'Notes',
     ],
     rows,
-    widths: [15, 44, 30, 24, 15, 12, 15, 12, 10, 10, 60],
-    wrap: [10],
+    widths: [15, 44, 30, 24, 15, 12, 15, 12, 10, 10, 70],
     // Status is column E (index 4). Rules + dropdowns reach 300 rows past the
     // data so rows added by hand in Excel behave the same way.
     rowRules: statusRules(4),
     dropdowns: [
       { col: 3, options: typeOptions },
-      { col: 4, options: PROJECT_STATUS_ORDER.map((s) => PROJECT_STATUS_LABELS[s]) },
+      { col: 4, options: [...PROJECT_STATUS_ORDER.map((s) => PROJECT_STATUS_LABELS[s]), 'Removed'] },
       { col: 6, options: ['Hard Start Date', 'Tentative'] },
     ],
     extraRows: 300,

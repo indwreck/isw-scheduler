@@ -106,7 +106,7 @@ function sheetXml(spec: SheetSpec, dxfBase: number) {
       const target = `$${colRef(rule.col)}2`
       return (
         `<conditionalFormatting sqref="${ref}">` +
-        `<cfRule type="expression" dxfId="${dxfBase + i}" priority="${i + 1}" stopIfTrue="1">` +
+        `<cfRule type="expression" dxfId="${dxfBase + i}" priority="${i + 1}">` +
         `<formula>${target}=&quot;${esc(rule.equals)}&quot;</formula>` +
         `</cfRule></conditionalFormatting>`
       )
@@ -147,7 +147,7 @@ function dxfXml(rule: RowRule) {
       ? `<font>${rule.bold ? '<b/>' : ''}${rule.fontColor ? `<color rgb="FF${rule.fontColor}"/>` : ''}</font>`
       : ''
   // differential fills use bgColor for the solid color
-  return `<dxf>${font}<fill><patternFill patternType="solid"><bgColor rgb="FF${rule.fill}"/></patternFill></fill></dxf>`
+  return `<dxf>${font}<fill><patternFill patternType="solid"><fgColor indexed="64"/><bgColor rgb="FF${rule.fill}"/></patternFill></fill></dxf>`
 }
 
 const stylesXml = (dxfs: string[]) =>
