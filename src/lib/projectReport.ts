@@ -5,9 +5,27 @@ import {
   PROJECT_STATUS_LABELS,
   PROJECT_STATUS_ORDER,
   WORK_TYPE_LABELS,
+  WORK_TYPE_ORDER,
   type Project,
 } from './types'
-import { downloadXlsx, type Cell, type SheetSpec } from './xlsx'
+import { downloadXlsx, type Cell, type RowRule, type SheetSpec } from './xlsx'
+
+/** Row colors by status — same scheme as Chuck's original Project Status sheet. */
+const STATUS_FILL: Partial<Record<Project['status'], string>> = {
+  in_permitting: 'FFF2CC', // light yellow (was "Utilities/Permits")
+  ready_to_start: 'DDEBF7', // light blue
+  active: '5B9BD5', // blue (was "In Progress")
+  completed: 'C6E0B4', // green
+  on_hold: 'F4B183', // orange
+  closed: 'D9D9D9', // gray (new in the app)
+}
+
+function statusRules(col: number, span?: [number, number]): RowRule[] {
+  return PROJECT_STATUS_ORDER.flatMap((s) => {
+    const fill = STATUS_FILL[s]
+    return fill ? [{ col, equals: PROJECT_STATUS_LABELS[s], fill, span }] : []
+  })
+}
 
 const STATUS_MEANING: Record<Project['status'], string> = {
   awarded: 'Job is ours but not ready for utilities/permits yet',
@@ -38,6 +56,12 @@ export function buildProjectReport(
     return a.name.localeCompare(b.name)
   })
 
+  const typeLabel = (p: Project) => (p.work_types ?? []).map((w) => WORK_TYPE_LABELS[w]).join(' / ')
+  const typeOptions = [
+    ...WORK_TYPE_ORDER.map((w) => WORK_TYPE_LABELS[w]),
+    ...new Set(sorted.map(typeLabel).filter((t) => t.includes(' / '))),
+  ]
+
   const rows: Cell[][] = sorted.map((p) => {
     const cal =
       p.use_company_calendar || !p.custom_work_days
@@ -53,7 +77,7 @@ export function buildProjectReport(
       p.project_number,
       p.name,
       p.address,
-      (p.work_types ?? []).map((w) => WORK_TYPE_LABELS[w]).join(' / '),
+      typeLabel(p),
       PROJECT_STATUS_LABELS[p.status],
       toDate(p.planned_start),
       p.planned_start ? (p.start_type === 'confirmed' ? 'Hard Start Date' : 'Tentative') : '',
@@ -82,6 +106,15 @@ export function buildProjectReport(
     rows,
     widths: [15, 44, 30, 24, 15, 12, 15, 12, 10, 10, 60],
     wrap: [10],
+    // Status is column E (index 4). Rules + dropdowns reach 300 rows past the
+    // data so rows added by hand in Excel behave the same way.
+    rowRules: statusRules(4),
+    dropdowns: [
+      { col: 3, options: typeOptions },
+      { col: 4, options: PROJECT_STATUS_ORDER.map((s) => PROJECT_STATUS_LABELS[s]) },
+      { col: 6, options: ['Hard Start Date', 'Tentative'] },
+    ],
+    extraRows: 300,
   }
 
   const key: SheetSpec = {
@@ -89,6 +122,7 @@ export function buildProjectReport(
     headers: ['Status', 'Meaning'],
     rows: PROJECT_STATUS_ORDER.map((s) => [PROJECT_STATUS_LABELS[s], STATUS_MEANING[s]]),
     widths: [18, 70],
+    rowRules: statusRules(0, [0, 0]),
   }
 
   return [tracker, key]
