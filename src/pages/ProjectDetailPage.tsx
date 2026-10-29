@@ -24,6 +24,7 @@ import {
 } from "../lib/types";
 
 type Draft = {
+  project_number: string;
   name: string;
   address: string;
   status: ProjectStatus;
@@ -40,6 +41,7 @@ type Draft = {
 };
 
 const EMPTY: Draft = {
+  project_number: "",
   name: "",
   address: "",
   status: "awarded",
@@ -57,6 +59,7 @@ const EMPTY: Draft = {
 
 function toDraft(p: Project): Draft {
   return {
+    project_number: p.project_number ?? "",
     name: p.name,
     address: p.address,
     status: p.status,
@@ -141,6 +144,7 @@ export default function ProjectDetailPage() {
     setSaving(true);
     setErr(null);
     const row = {
+      project_number: draft.project_number.trim(),
       name: draft.name.trim(),
       address: draft.address.trim(),
       status: draft.status,
@@ -216,7 +220,10 @@ export default function ProjectDetailPage() {
       <Link to="/projects" className="back-link">
         ‹ Projects
       </Link>
-      <h1 className="page-title">{isNew ? "New project" : orig.name}</h1>
+      <h1 className="page-title">
+        {isNew ? "New project" : orig.name}
+        {!isNew && orig.project_number && <span className="unit-no" style={{ marginLeft: 10, verticalAlign: "middle" }}>{orig.project_number}</span>}
+      </h1>
 
       {err && <div className="alert-error">{err}</div>}
 
@@ -224,7 +231,17 @@ export default function ProjectDetailPage() {
         <div className="card section">
           <h2 className="section-title">Project</h2>
           <div className="form-grid">
-            <label className="field span-2">
+            <label className="field">
+              <span>Project number</span>
+              <input
+                type="text"
+                autoComplete="off"
+                placeholder="e.g. 26-0216"
+                value={draft.project_number}
+                onChange={(e) => set("project_number", e.target.value)}
+              />
+            </label>
+            <label className="field">
               <span>Project name</span>
               <input
                 type="text"

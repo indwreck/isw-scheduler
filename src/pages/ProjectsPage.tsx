@@ -63,7 +63,7 @@ export default function ProjectsPage() {
       if (filter !== 'all' && p.status !== filter) return false
       if (filter === 'all' && !showAll && LIST_HIDDEN_STATUSES.includes(p.status))
         return false
-      if (needle && !`${p.name} ${p.address}`.toLowerCase().includes(needle)) return false
+      if (needle && !`${p.project_number} ${p.name} ${p.address}`.toLowerCase().includes(needle)) return false
       return true
     })
   }, [projects, filter, showAll, q])
@@ -84,7 +84,7 @@ export default function ProjectsPage() {
       <div className="toolbar">
         <input
           type="text"
-          placeholder="Search name or address…"
+          placeholder="Search number, name, address…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           className="toolbar-search"
@@ -157,7 +157,10 @@ function ProjectRow({
     <li>
       <Link to={`/projects/${p.id}`} className="project-row">
         <div className="project-main">
-          <div className="project-name">{p.name}</div>
+          <div className="project-name">
+            {p.project_number && <span className="unit-no">{p.project_number}</span>}
+            {p.name}
+          </div>
           {p.address && <div className="sub">{p.address}</div>}
           {(p.work_types?.length > 0 || permits) && (
             <div className="tag-row">

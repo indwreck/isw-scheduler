@@ -73,6 +73,7 @@ export const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export interface Project {
   id: number
+  project_number: string
   name: string
   address: string
   status: ProjectStatus

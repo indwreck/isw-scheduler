@@ -52,10 +52,10 @@ const MOCK = {
     { personnel_id: 3, skill_id: 3, expires_on: null }, { personnel_id: 3, skill_id: 4, expires_on: null }, { personnel_id: 3, skill_id: 10, expires_on: null }, { personnel_id: 3, skill_id: 12, expires_on: null },
   ],
   projects: [
-    { id: 1, name: 'Zoetis Building Demolition', address: '1234 NE Douglas St, Lee\u2019s Summit, MO', work_types: ['total','site'], status: 'active', start_type: 'confirmed', planned_start: '2026-09-08', planned_end: '2026-10-30', est_duration_days: null, use_company_calendar: true, custom_work_days: null, custom_start_time: null, custom_end_time: null, notes: '', created_by: null, created_at: '', updated_at: '' },
-    { id: 2, name: 'Westward Parking Garage', address: '900 Westward Dr, Kansas City, MO', work_types: ['total'], status: 'in_permitting', start_type: 'tentative', planned_start: '2026-10-05', planned_end: null, est_duration_days: 15, use_company_calendar: true, custom_work_days: null, custom_start_time: null, custom_end_time: null, notes: 'Night work may be required near the hotel entrance.', created_by: null, created_at: '', updated_at: '' },
-    { id: 3, name: 'Riverfront Outlet Mall', address: '1 Riverfront Plaza, Lawrence, KS', work_types: ['selective','interior'], status: 'awarded', start_type: 'tentative', planned_start: null, planned_end: null, est_duration_days: 40, use_company_calendar: false, custom_work_days: [1,2,3,4], custom_start_time: '06:00:00', custom_end_time: '16:30:00', notes: '', created_by: null, created_at: '', updated_at: '' },
-    { id: 4, name: 'Lenexa Fire Station 6', address: 'Lenexa, KS', work_types: ['total'], status: 'completed', start_type: 'confirmed', planned_start: '2026-06-01', planned_end: '2026-06-19', est_duration_days: null, use_company_calendar: true, custom_work_days: null, custom_start_time: null, custom_end_time: null, notes: '', created_by: null, created_at: '', updated_at: '' },
+    { id: 1, project_number: '26-0222', name: 'Zoetis Building Demolition', address: '1234 NE Douglas St, Lee\u2019s Summit, MO', work_types: ['total','site'], status: 'active', start_type: 'confirmed', planned_start: '2026-09-08', planned_end: '2026-10-30', est_duration_days: null, use_company_calendar: true, custom_work_days: null, custom_start_time: null, custom_end_time: null, notes: '', created_by: null, created_at: '', updated_at: '' },
+    { id: 2, project_number: '26-0301', name: 'Westward Parking Garage', address: '900 Westward Dr, Kansas City, MO', work_types: ['total'], status: 'in_permitting', start_type: 'tentative', planned_start: '2026-10-05', planned_end: null, est_duration_days: 15, use_company_calendar: true, custom_work_days: null, custom_start_time: null, custom_end_time: null, notes: 'Night work may be required near the hotel entrance.', created_by: null, created_at: '', updated_at: '' },
+    { id: 3, project_number: '26-0290', name: 'Riverfront Outlet Mall', address: '1 Riverfront Plaza, Lawrence, KS', work_types: ['selective','interior'], status: 'awarded', start_type: 'tentative', planned_start: null, planned_end: null, est_duration_days: 40, use_company_calendar: false, custom_work_days: [1,2,3,4], custom_start_time: '06:00:00', custom_end_time: '16:30:00', notes: '', created_by: null, created_at: '', updated_at: '' },
+    { id: 4, project_number: '26-0248', name: 'Lenexa Fire Station 6', address: 'Lenexa, KS', work_types: ['total'], status: 'completed', start_type: 'confirmed', planned_start: '2026-06-01', planned_end: '2026-06-19', est_duration_days: null, use_company_calendar: true, custom_work_days: null, custom_start_time: null, custom_end_time: null, notes: '', created_by: null, created_at: '', updated_at: '' },
   ],
   project_contacts: [
     { id: 1, project_id: 2, name: 'Rachel Heathman', company: 'McCownGordon', role: 'Project Manager', phone: '816-555-0100', email: 'rheathman@example.com', notes: '' },
@@ -104,7 +104,7 @@ const MOCK = {
   assignments: [],
 }
 
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' })
+const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH ?? '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome' })
 
 for (const [tag, viewport] of [['phone', { width: 390, height: 844 }], ['desktop', { width: 1280, height: 900 }]]) {
   const ctx = await browser.newContext({ viewport, deviceScaleFactor: 1 })
