@@ -4,6 +4,7 @@ import { format, parseISO } from 'date-fns'
 import { supabase } from '../lib/supabase'
 import { useLookups } from '../lib/lookups'
 import { endAfterWorkingDays } from '../lib/workdays'
+import { downloadProjectReport } from '../lib/projectReport'
 import {
   LIST_HIDDEN_STATUSES,
   PROJECT_STATUS_LABELS,
@@ -76,9 +77,21 @@ export default function ProjectsPage() {
     <section>
       <div className="page-head">
         <h1 className="page-title">Projects</h1>
-        <Link to="/projects/new" className="btn btn-primary">
-          + New project
-        </Link>
+        <div className="page-actions">
+          <button
+            type="button"
+            className="btn"
+            disabled={loading || projects.length === 0}
+            onClick={() => downloadProjectReport(projects, permits, companyCalendar)}
+            title="Download every project as an Excel spreadsheet"
+          >
+            <span>Export</span>
+            <span className="phone-hide">to Excel</span>
+          </button>
+          <Link to="/projects/new" className="btn btn-primary">
+            + New project
+          </Link>
+        </div>
       </div>
 
       <div className="toolbar">
