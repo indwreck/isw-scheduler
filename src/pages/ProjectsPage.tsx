@@ -175,6 +175,7 @@ function ProjectRow({
             {p.name}
           </div>
           {p.address && <div className="sub">{p.address}</div>}
+          {p.notes && <div className="sub quick-note">{p.notes}</div>}
           {(p.work_types?.length > 0 || permits) && (
             <div className="tag-row">
               {p.work_types?.map((w) => (

@@ -492,6 +492,10 @@ textarea:focus {
 .page-head .page-title {
   margin: 0;
 }
+.quick-note {
+  color: var(--text);
+  font-style: italic;
+}
 .page-actions {
   display: flex;
   gap: 8px;

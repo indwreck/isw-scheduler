@@ -42,9 +42,10 @@ function toDate(iso: string | null): Date | null {
   return iso ? parseISO(iso) : null
 }
 
-/** Keep the Notes column readable: short notes go in as-is; long or
- *  multi-line notes show their first line and point back to the app. */
-const NOTE_LIMIT = 90
+/** The Notes column is the project's quick note. The app keeps it to one
+ *  short line, but older or hand-edited rows could still be long or
+ *  multi-line — those show their first line and point back to the app. */
+const NOTE_LIMIT = 160
 function noteCell(notes: string): string {
   const text = (notes ?? '').trim()
   if (!text) return ''

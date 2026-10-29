@@ -38,6 +38,7 @@ type Draft = {
   custom_start_time: string;
   custom_end_time: string;
   notes: string;
+  scope: string;
 };
 
 const EMPTY: Draft = {
@@ -55,6 +56,7 @@ const EMPTY: Draft = {
   custom_start_time: "",
   custom_end_time: "",
   notes: "",
+  scope: "",
 };
 
 function toDraft(p: Project): Draft {
@@ -73,6 +75,7 @@ function toDraft(p: Project): Draft {
     custom_start_time: p.custom_start_time?.slice(0, 5) ?? "",
     custom_end_time: p.custom_end_time?.slice(0, 5) ?? "",
     notes: p.notes,
+    scope: p.scope ?? "",
   };
 }
 
@@ -166,6 +169,7 @@ export default function ProjectDetailPage() {
         ? null
         : draft.custom_end_time || null,
       notes: draft.notes,
+      scope: draft.scope,
     };
     if (isNew) {
       const { data, error } = await supabase
@@ -394,12 +398,33 @@ export default function ProjectDetailPage() {
       )}
 
       <div className="card section">
-        <h2 className="section-title">Notes</h2>
+        <h2 className="section-title">Quick note</h2>
+        <p className="hint" style={{ marginTop: 0 }}>
+          One line on where the job stands. Shows on the Projects list and in the
+          Notes column of the Excel export.
+        </p>
+        <input
+          form="project-form"
+          type="text"
+          maxLength={160}
+          value={draft.notes}
+          onChange={(e) => set("notes", e.target.value.replace(/[\r\n]+/g, " "))}
+          placeholder="e.g. waiting on Evergy water kill 11-2"
+        />
+      </div>
+
+      <div className="card section">
+        <h2 className="section-title">Project scope</h2>
+        <p className="hint" style={{ marginTop: 0 }}>
+          The full picture: what comes down, what stays, rules on site, anything
+          the crew or office needs to know.
+        </p>
         <textarea
           form="project-form"
-          value={draft.notes}
-          onChange={(e) => set("notes", e.target.value)}
-          placeholder="Anything the crew or office should know about this job."
+          rows={10}
+          value={draft.scope}
+          onChange={(e) => set("scope", e.target.value)}
+          placeholder="Take it all down — building, slabs, footings… Do not touch the trees…"
         />
       </div>
 

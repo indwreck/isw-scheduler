@@ -86,7 +86,10 @@ export interface Project {
   custom_start_time: string | null
   custom_end_time: string | null
   work_types: WorkType[]
+  /** short quick note — shows on the Projects list and in the Excel export */
   notes: string
+  /** long-form description of the job */
+  scope: string
   created_by: string | null
   created_at: string
   updated_at: string
