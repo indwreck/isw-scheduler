@@ -409,7 +409,6 @@ export default function ProjectDetailPage() {
           maxLength={160}
           value={draft.notes}
           onChange={(e) => set("notes", e.target.value.replace(/[\r\n]+/g, " "))}
-          placeholder="e.g. waiting on Evergy water kill 11-2"
         />
       </div>
 
@@ -424,7 +423,6 @@ export default function ProjectDetailPage() {
           rows={10}
           value={draft.scope}
           onChange={(e) => set("scope", e.target.value)}
-          placeholder="Take it all down — building, slabs, footings… Do not touch the trees…"
         />
       </div>
 
