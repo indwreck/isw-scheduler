@@ -58,6 +58,13 @@ export function LookupsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     refresh()
+    // Also re-read when the app comes back to the foreground, so a role or
+    // holiday added on another device shows up without a full reload.
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') refresh()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
   }, [refresh])
 
   const companyCalendar: WorkCalendar = {

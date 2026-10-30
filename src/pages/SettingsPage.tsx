@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { format, parseISO } from 'date-fns'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
+import { useLookups } from '../lib/lookups'
 import {
   DAY_LABELS,
   type CompanySettings,
@@ -58,6 +59,7 @@ export default function SettingsPage() {
    ========================================================================= */
 
 function WorkScheduleSection({ canEdit }: { canEdit: boolean }) {
+  const { refresh: refreshLookups } = useLookups()
   const [settings, setSettings] = useState<CompanySettings | null>(null)
   const [days, setDays] = useState<number[]>([])
   const [start, setStart] = useState('07:00')
@@ -107,7 +109,10 @@ function WorkScheduleSection({ canEdit }: { canEdit: boolean }) {
       .eq('id', 1)
     setSaving(false)
     if (error) setErr(error.message)
-    else setMsg('Saved.')
+    else {
+      setMsg('Saved.')
+      refreshLookups()
+    }
   }
 
   const dirty =
@@ -190,6 +195,7 @@ function WorkScheduleSection({ canEdit }: { canEdit: boolean }) {
    ========================================================================= */
 
 function HolidaysSection({ canEdit }: { canEdit: boolean }) {
+  const { refresh: refreshLookups } = useLookups()
   const [items, setItems] = useState<Holiday[]>([])
   const [date, setDate] = useState('')
   const [name, setName] = useState('')
@@ -229,6 +235,7 @@ function HolidaysSection({ canEdit }: { canEdit: boolean }) {
     setDate('')
     setName('')
     load()
+    refreshLookups()
   }
 
   async function remove(h: Holiday) {
@@ -236,7 +243,10 @@ function HolidaysSection({ canEdit }: { canEdit: boolean }) {
     if (!confirm(`Remove ${h.name || 'this date'} (${fmt(h.holiday_date)})?`)) return
     const { error } = await supabase.from('holidays').delete().eq('id', h.id)
     if (error) setErr(error.message)
-    else load()
+    else {
+      load()
+      refreshLookups()
+    }
   }
 
   // Group past vs upcoming so old dates don't clutter the top
@@ -346,6 +356,7 @@ function LookupSection({
   help: string
   placeholder: string
 }) {
+  const { refresh: refreshLookups } = useLookups()
   const [items, setItems] = useState<LookupItem[]>([])
   const [newName, setNewName] = useState('')
   const [editing, setEditing] = useState<{ id: number; name: string } | null>(null)
@@ -383,6 +394,7 @@ function LookupSection({
     }
     setNewName('')
     load()
+    refreshLookups()
   }
 
   async function rename() {
@@ -394,6 +406,7 @@ function LookupSection({
     if (error) setErr(error.message)
     setEditing(null)
     load()
+    refreshLookups()
   }
 
   async function toggleActive(item: LookupItem) {
@@ -403,7 +416,10 @@ function LookupSection({
       .update({ is_active: !item.is_active })
       .eq('id', item.id)
     if (error) setErr(error.message)
-    else load()
+    else {
+      load()
+      refreshLookups()
+    }
   }
 
   return (
