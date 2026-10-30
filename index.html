@@ -10,6 +10,13 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>ISW Scheduler</title>
+    <script>
+      // Apply the saved light/dark choice before the app paints (no flash).
+      try {
+        var t = localStorage.getItem('isw-theme');
+        if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -107,7 +107,7 @@ const MOCK = {
 const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH ?? '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome' })
 
 for (const [tag, viewport] of [['phone', { width: 390, height: 844 }], ['desktop', { width: 1280, height: 900 }]]) {
-  const ctx = await browser.newContext({ viewport, deviceScaleFactor: 1 })
+  const ctx = await browser.newContext({ viewport, deviceScaleFactor: 1, colorScheme: process.env.DARK ? 'dark' : 'light' })
   await ctx.route(`https://${REF}.supabase.co/**`, async (r) => {
     const url = new URL(r.request().url())
     if (url.pathname.includes('/auth/v1/user')) return r.fulfill({ json: { id: USER_ID, email: 'chuck3@indwreck.com' } })
