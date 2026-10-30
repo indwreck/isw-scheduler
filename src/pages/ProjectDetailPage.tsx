@@ -414,10 +414,6 @@ export default function ProjectDetailPage() {
 
       <div className="card section">
         <h2 className="section-title">Project scope</h2>
-        <p className="hint" style={{ marginTop: 0 }}>
-          The full picture: what comes down, what stays, rules on site, anything
-          the crew or office needs to know.
-        </p>
         <textarea
           form="project-form"
           rows={10}
